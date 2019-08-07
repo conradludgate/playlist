@@ -43,7 +43,7 @@ func HttpMiddleware(handler HttpHandler, state State) http.HandlerFunc {
 
 		if resp.err != nil {
 
-			response.Error = resp.err.Error()
+			response.Error = resp.err
 			response.Success = false
 
 			b, err := response.MarshalJSON()

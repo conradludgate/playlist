@@ -13,7 +13,7 @@ type Response struct {
 	Status  int
 	Success bool
 	Value   FFJSONMarshaler
-	Error   string
+	Error   error
 }
 
 // MarshalJSON marshal bytes to json - template
@@ -60,7 +60,12 @@ func (r *Response) MarshalJSONBuf(buf fflib.EncodingBuffer) error {
 	}
 
 	buf.WriteString(`,"error":`)
-	fflib.WriteJsonString(buf, string(r.Error))
+	if r.Error != nil {
+		fflib.WriteJsonString(buf, string(r.Error.Error()))
+	} else {
+		buf.WriteString("null")
+	}
+
 	buf.WriteByte('}')
 	return nil
 }
