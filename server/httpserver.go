@@ -1,21 +1,17 @@
 package main
 
 import (
-	"errors"
 	"log"
 	"net/http"
-	"net/url"
-	"path/filepath"
+	"time"
 
 	"github.com/conradludgate/playlist/server/exchanges"
 )
 
-var (
-	SPOTIFY_CLIENT_ID string
-	HOSTNAME          string
-)
-
 type State struct {
+	AccessToken  string
+	Expires      time.Time
+	RefreshToken string
 }
 
 type response struct {
@@ -25,9 +21,9 @@ type response struct {
 	headers map[string]string
 }
 
-type HttpHandler func(r *http.Request, state State) response
+type HttpHandler func(r *http.Request, state *State) response
 
-func HttpMiddleware(handler HttpHandler, state State) http.HandlerFunc {
+func HttpMiddleware(handler HttpHandler, state *State) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp := handler(r, state)
@@ -76,48 +72,4 @@ func HttpMiddleware(handler HttpHandler, state State) http.HandlerFunc {
 			log.Println(err)
 		}
 	}
-}
-
-func LoginRequest(r *http.Request, state State) response {
-	scopes := []string{"user-read-private"}
-
-	spotify_url, err := url.Parse("https://accounts.spotify.com/authorize")
-	if err != nil {
-		log.Println(err.Error())
-		return response{
-			status: http.StatusInternalServerError,
-			err:    errors.New("Could not process login request at this time"),
-		}
-	}
-
-	query := spotify_url.Query()
-	query.Set("response_type", "code")
-	query.Set("client_id", SPOTIFY_CLIENT_ID)
-	for _, scope := range scopes {
-		query.Add("scope", scope)
-	}
-
-	redirect_url, err := url.Parse(HOSTNAME)
-	if err != nil {
-		log.Println(err.Error())
-		return response{
-			status: http.StatusInternalServerError,
-			err:    errors.New("Could not process login request at this time"),
-		}
-	}
-
-	redirect_url.Path = filepath.Join(redirect_url.Path, "spotify_callback")
-
-	query.Set("redirect_uri", redirect_url.String())
-	spotify_url.RawQuery = query.Encode()
-
-	headers := make(map[string]string)
-	headers["Location"] = spotify_url.String()
-
-	return response{status: http.StatusSeeOther, headers: headers}
-}
-
-func SpotifyCallback(r *http.Request, state State) response {
-	log.Println(r.URL)
-	return response{status: 200}
 }
