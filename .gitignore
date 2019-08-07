@@ -13,6 +13,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Uncomment if I dont want generated files I guess
+# *_ffjson.go
 
 ###Node###
 
