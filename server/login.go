@@ -14,7 +14,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/conradludgate/playlist/server/spotify"
+	"github.com/conradludgate/playlist/server/exchanges/spotify"
 )
 
 var (

@@ -1,7 +1,7 @@
 package exchanges
 
 import (
-	"github.com/conradludgate/playlist/server/spotify"
+	"github.com/conradludgate/playlist/server/exchanges/spotify"
 )
 
 //go:generate ffjson $GOFILE
