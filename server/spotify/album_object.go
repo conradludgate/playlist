@@ -1,26 +1,21 @@
 package spotify
 
+// Album https://developer.spotify.com/documentation/web-api/reference/object-model/#album-object-full
 type Album struct {
 	SimpleAlbum
 	ExternalIDs ExternalID `json:"external_ids"`
 
 	Copyrights []Copyright `json:"copyrights"`
 	Genres     []string    `json:"genres"`
-	Label      string      `json:"copyrights"`
-	Popularity int         `json:"copyrights"`
+	Label      string      `json:"label"`
+	Popularity int         `json:"popularity"`
 	Tracks     struct {
 		PagingObject
 		Items []SimpleTrack `json:"items"`
 	} `json:"tracks"`
 }
 
-// copyrights	array of copyright objects	The copyright statements of the album.
-// external_ids	an external ID object	Known external IDs for the album.
-// genres	array of strings	A list of the genres used to classify the album. For example: "Prog Rock" , "Post-Grunge". (If not yet classified, the array is empty.)
-// label	string	The label for the album.
-// popularity	integer	The popularity of the album. The value will be between 0 and 100, with 100 being the most popular. The popularity is calculated from the popularity of the album’s individual tracks.
-// tracks	array of simplified track objects inside a paging object	The tracks of the album.
-
+// SimpleAlbum https://developer.spotify.com/documentation/web-api/reference/object-model/#album-object-simplified
 type SimpleAlbum struct {
 	External
 
@@ -37,11 +32,13 @@ type SimpleAlbum struct {
 	Restrictions Restrictions `json:"rescriptions"`
 }
 
+// Copyright https://developer.spotify.com/documentation/web-api/reference/object-model/#copyright-object
 type Copyright struct {
 	Text string `json:"text"`
 	Type string `json:"type"`
 }
 
+// Restrictions reason why is_playable would be false
 type Restrictions struct {
 	Reason string `json:"reason"`
 }

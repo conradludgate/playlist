@@ -18,17 +18,18 @@ import (
 )
 
 var (
-	SPOTIFY_CLIENT_ID     string
-	SPOTIFY_CLIENT_SECRET string
+	spotifyClientID     string
+	spotifyClientSecret string
 
 	redirectURI string
 )
 
+// GetAccessToken returns the access token if it's currently valid, or requests a new one
 func (state *State) GetAccessToken() (string, error) {
 	if time.Now().After(state.Expires) {
 		requestData := spotify.RefreshTokenRequest{
-			ClientID:     SPOTIFY_CLIENT_ID,
-			ClientSecret: SPOTIFY_CLIENT_SECRET,
+			ClientID:     spotifyClientID,
+			ClientSecret: spotifyClientSecret,
 			RefreshToken: state.RefreshToken,
 		}
 		resp, err := requestData.Send()
@@ -68,44 +69,46 @@ func init() {
 	redirectURI = redirectURL.String()
 }
 
-func LoginRequest(r *http.Request, state *State) response {
+// LoginRequest is the handler for logging in and getting a spotify auth code
+func LoginRequest(r *http.Request, state *State) Response {
 	scopes := []string{
 		"user-read-private",
 		"playlist-read-private",
 	}
 
-	spotify_url, err := url.Parse("https://accounts.spotify.com/authorize")
+	spotifyURL, err := url.Parse("https://accounts.spotify.com/authorize")
 	if err != nil {
 		log.Println(err.Error())
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    errors.New("Could not process login request at this time"),
 		}
 	}
 
-	query := spotify_url.Query()
+	query := spotifyURL.Query()
 	query.Set("response_type", "code")
-	query.Set("client_id", SPOTIFY_CLIENT_ID)
+	query.Set("client_id", spotifyClientID)
 	for _, scope := range scopes {
 		query.Add("scope", scope)
 	}
 
 	query.Set("redirect_uri", redirectURI)
-	spotify_url.RawQuery = query.Encode()
+	spotifyURL.RawQuery = query.Encode()
 
-	return Redirect(http.StatusSeeOther, spotify_url.String())
+	return redirect(http.StatusSeeOther, spotifyURL.String())
 }
 
-func SpotifyCallback(r *http.Request, state *State) response {
+// SpotifyCallback is the handler for when spotify redirects back to us after login
+func SpotifyCallback(r *http.Request, state *State) Response {
 	requestData := spotify.AccessTokenRequest{
-		ClientID:     SPOTIFY_CLIENT_ID,
-		ClientSecret: SPOTIFY_CLIENT_SECRET,
+		ClientID:     spotifyClientID,
+		ClientSecret: spotifyClientSecret,
 		Code:         r.FormValue("code"),
 		RedirectURI:  redirectURI,
 	}
 	resp, err := requestData.Send()
 	if err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
@@ -113,14 +116,14 @@ func SpotifyCallback(r *http.Request, state *State) response {
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return response{
+		return Response{
 			status: http.StatusBadRequest,
 			err:    errors.New(string(b)),
 		}
@@ -128,7 +131,7 @@ func SpotifyCallback(r *http.Request, state *State) response {
 
 	data := spotify.AccessTokenResponse{}
 	if err := data.UnmarshalJSON(b); err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
@@ -138,13 +141,14 @@ func SpotifyCallback(r *http.Request, state *State) response {
 	state.RefreshToken = data.RefreshToken
 	state.Expires = time.Now().Add(time.Duration(data.ExpiresIn) * time.Second)
 
-	return Redirect(http.StatusSeeOther, "/me")
+	return redirect(http.StatusSeeOther, "/me")
 }
 
-func Me(r *http.Request, state *State) response {
+// Me is the handler for testing
+func Me(r *http.Request, state *State) Response {
 	accessToken, err := state.GetAccessToken()
 	if err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
@@ -153,7 +157,7 @@ func Me(r *http.Request, state *State) response {
 	// Get Me
 	resp, err := spotify.Send(spotify.MeRequest{}, accessToken)
 	if err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
@@ -161,14 +165,14 @@ func Me(r *http.Request, state *State) response {
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return response{
+		return Response{
 			status: http.StatusBadRequest,
 			err:    errors.New(string(b)),
 		}
@@ -176,14 +180,14 @@ func Me(r *http.Request, state *State) response {
 
 	me := spotify.MeResponse{}
 	if err := me.UnmarshalJSON(b); err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
 	}
 
 	if me.IsError() {
-		return response{
+		return Response{
 			status: me.Status,
 			err:    me.Error,
 		}
@@ -194,7 +198,7 @@ func Me(r *http.Request, state *State) response {
 	// Get my playlists
 	resp, err = spotify.Send(spotify.GetPlaylistsRequest{}, accessToken)
 	if err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
@@ -202,14 +206,14 @@ func Me(r *http.Request, state *State) response {
 
 	b, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return response{
+		return Response{
 			status: http.StatusBadRequest,
 			err:    errors.New(string(b)),
 		}
@@ -217,7 +221,7 @@ func Me(r *http.Request, state *State) response {
 
 	playlists := spotify.GetPlaylistsResponse{}
 	if err := playlists.UnmarshalJSON(b); err != nil {
-		return response{
+		return Response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
@@ -236,7 +240,7 @@ func Me(r *http.Request, state *State) response {
 		})
 	}
 
-	return response{
+	return Response{
 		status: 200,
 		value:  &plr,
 	}

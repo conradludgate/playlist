@@ -1,10 +1,12 @@
 package spotify
 
+// Followers https://developer.spotify.com/documentation/web-api/reference/object-model/#followers-object
 type Followers struct {
 	HREF  string `json:"href"`
 	Total int    `json:"total"`
 }
 
+// PrivateUser https://developer.spotify.com/documentation/web-api/reference/object-model/#user-object-private
 type PrivateUser struct {
 	User
 	Country string `json:"country"`
@@ -12,21 +14,10 @@ type PrivateUser struct {
 	Product string `json:"product"`
 }
 
+// User https://developer.spotify.com/documentation/web-api/reference/object-model/#user-object-public
 type User struct {
 	External
 	DisplayName string    `json:"display_name"`
 	Followers   Followers `json:"followers"`
 	Images      []Image   `json:"images"`
-}
-
-type Me struct {
-	External
-	DisplayName string `json:"display_name"`
-	Email       string `json:"email"`
-	Images      []struct {
-		URL    string `json:"url"`
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
-	} `json:"images"`
-	Product string `json:"product"`
 }

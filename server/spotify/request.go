@@ -25,17 +25,23 @@ const (
 	put
 	patch
 	delete
+	none
 )
 
 //go:generate ffjson $GOFILE
 
-type JSONRequest interface {
-	Request() (method, string)
+type jsonRequest interface {
+	request() (method, string, error)
 }
 
-func Send(r JSONRequest, accessToken string) (*http.Response, error) {
+// Send sends off a request, returning the response or an error
+func Send(r jsonRequest, accessToken string) (*http.Response, error) {
+	method, url, err := r.request()
+	if err != nil {
+		return nil, err
+	}
+
 	client := http.Client{}
-	method, url := r.Request()
 	var methodString string
 	var body io.Reader
 
@@ -67,6 +73,7 @@ func Send(r JSONRequest, accessToken string) (*http.Response, error) {
 	return client.Do(req)
 }
 
+// AccessTokenRequest object containing the neccesary information to request an access token for the first time
 type AccessTokenRequest struct {
 	ClientID     string `json:"-"`
 	ClientSecret string `json:"-"`
@@ -74,6 +81,7 @@ type AccessTokenRequest struct {
 	RedirectURI  string `json:"-"`
 }
 
+// AccessTokenResponse response for AccessTokenRequest
 type AccessTokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	TokenType    string `json:"token_type"`
@@ -82,6 +90,7 @@ type AccessTokenResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// Send sends off the request for an access token
 func (r *AccessTokenRequest) Send() (*http.Response, error) {
 	values := url.Values{}
 	values.Set("client_id", r.ClientID)
@@ -93,12 +102,14 @@ func (r *AccessTokenRequest) Send() (*http.Response, error) {
 	return http.PostForm("https://accounts.spotify.com/api/token", values)
 }
 
+// RefreshTokenRequest object containing the neccesary information to request a new access token
 type RefreshTokenRequest struct {
 	ClientID     string `json:"-"`
 	ClientSecret string `json:"-"`
 	RefreshToken string `json:"-"`
 }
 
+// RefreshTokenResponse response for RefreshTokenRequest
 type RefreshTokenResponse struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
@@ -106,6 +117,7 @@ type RefreshTokenResponse struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
+// Send sends off the request for a new access token
 func (r RefreshTokenRequest) Send() (*http.Response, error) {
 	values := url.Values{}
 	values.Set("client_id", r.ClientID)

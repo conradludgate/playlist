@@ -1,5 +1,6 @@
 package spotify
 
+// Track https://developer.spotify.com/documentation/web-api/reference/object-model/#track-object-full
 type Track struct {
 	SimpleTrack
 	ExternalIDs ExternalID `json:"external_ids"`
@@ -8,6 +9,7 @@ type Track struct {
 	Popularity int         `json:"popularity"`
 }
 
+// SimpleTrack https://developer.spotify.com/documentation/web-api/reference/object-model/#track-object-simplified
 type SimpleTrack struct {
 	External
 

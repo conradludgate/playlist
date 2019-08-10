@@ -7,22 +7,26 @@ import (
 	"github.com/conradludgate/playlist/server/exchanges"
 )
 
+// State is the state that all HTTP Handlers might need to access
 type State struct {
 	AccessToken  string
 	Expires      time.Time
 	RefreshToken string
 }
 
-type response struct {
+// Response is a response from all HTTPHandlers to get processed by HTTPMiddleware
+type Response struct {
 	value   exchanges.FFJSONMarshaler
 	status  int
 	err     error
 	headers map[string]string
 }
 
-type HttpHandler func(r *http.Request, state *State) response
+// HTTPHandler handler for all http requests
+type HTTPHandler func(r *http.Request, state *State) Response
 
-func HttpMiddleware(handler HttpHandler, state *State) http.HandlerFunc {
+// HTTPMiddleware turns a HTTPHandler and State into a valid http.HandlerFunc
+func HTTPMiddleware(handler HTTPHandler, state *State) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp := handler(r, state)

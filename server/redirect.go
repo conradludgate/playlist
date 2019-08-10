@@ -1,8 +1,8 @@
 package main
 
-func Redirect(status int, url string) response {
+func redirect(status int, url string) Response {
 	headers := make(map[string]string)
 	headers["Location"] = url
 
-	return response{status: status, headers: headers}
+	return Response{status: status, headers: headers}
 }

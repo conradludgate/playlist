@@ -2,12 +2,14 @@ package spotify
 
 import "time"
 
+// Playlist https://developer.spotify.com/documentation/web-api/reference/object-model/#playlist-object-full
 type Playlist struct {
 	SimplePlaylist
 	Followers   Followers `json:"followers"`
 	Description string    `json:"description"`
 }
 
+// SimplePlaylist https://developer.spotify.com/documentation/web-api/reference/object-model/#playlist-object-simplified
 type SimplePlaylist struct {
 	External
 
@@ -23,8 +25,9 @@ type SimplePlaylist struct {
 	} `json:"tracks"`
 }
 
+// PlaylistTrack https://developer.spotify.com/documentation/web-api/reference/object-model/#playlist-track-object
 type PlaylistTrack struct {
-	AddedAt time.Time `json:"added_at`
+	AddedAt time.Time `json:"added_at"`
 	AddedBy User      `json:"added_by"`
 	IsLocal bool      `json:"is_local"`
 	Track   Track     `json:"track"`
