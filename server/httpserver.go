@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -35,30 +34,14 @@ func HttpMiddleware(handler HttpHandler, state *State) http.HandlerFunc {
 
 		var response exchanges.Response
 		response.Status = resp.status
-		w.WriteHeader(resp.status)
 
 		if resp.err != nil {
-
 			response.Error = resp.err
 			response.Success = false
-
-			b, err := response.MarshalJSON()
-			if err != nil {
-				// Should not error on marshalling
-				// But I guess I never know?
-				// Should replace with a 'failsafe' solution in future
-				panic(err)
-			}
-
-			if _, err := w.Write(b); err != nil {
-				log.Println(err)
-			}
-
-			return
+		} else {
+			response.Success = true
+			response.Value = resp.value
 		}
-
-		response.Success = true
-		response.Value = resp.value
 
 		b, err := response.MarshalJSON()
 		if err != nil {
@@ -68,8 +51,10 @@ func HttpMiddleware(handler HttpHandler, state *State) http.HandlerFunc {
 			panic(err)
 		}
 
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(resp.status)
 		if _, err := w.Write(b); err != nil {
-			log.Println(err)
+			panic(err)
 		}
 	}
 }

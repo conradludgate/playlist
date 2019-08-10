@@ -14,7 +14,7 @@
 *.out
 
 # Uncomment if I dont want generated files I guess
-# *_ffjson.go
+*_ffjson.go
 
 ###Node###
 

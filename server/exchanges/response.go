@@ -4,11 +4,13 @@ import (
 	fflib "github.com/pquerna/ffjson/fflib/v1"
 )
 
+// FFJSONMarshaler is an interface to any type that is quickly converted to json
 type FFJSONMarshaler interface {
-	MarshalJSONBuf(buf fflib.EncodingBuffer) error
+	MarshalJSON() ([]byte, error)
+	MarshalJSONBuf(fflib.EncodingBuffer) error
 }
 
-// ffjson: skip
+// Response is the type that all http requests get sent back
 type Response struct {
 	Status  int
 	Success bool
@@ -16,7 +18,7 @@ type Response struct {
 	Error   error
 }
 
-// MarshalJSON marshal bytes to json - template
+// MarshalJSON turns a response object into it's JSON form as bytes
 func (r *Response) MarshalJSON() ([]byte, error) {
 	var buf fflib.Buffer
 	if r == nil {
@@ -30,7 +32,7 @@ func (r *Response) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// MarshalJSONBuf marshal buff to json - template
+// MarshalJSONBuf writes the object to a buffer as json
 func (r *Response) MarshalJSONBuf(buf fflib.EncodingBuffer) error {
 	if r == nil {
 		buf.WriteString("null")

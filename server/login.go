@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/conradludgate/playlist/server/exchanges"
 
 	"github.com/joho/godotenv"
 
@@ -68,7 +69,10 @@ func init() {
 }
 
 func LoginRequest(r *http.Request, state *State) response {
-	scopes := []string{"user-read-private"}
+	scopes := []string{
+		"user-read-private",
+		"playlist-read-private",
+	}
 
 	spotify_url, err := url.Parse("https://accounts.spotify.com/authorize")
 	if err != nil {
@@ -89,10 +93,7 @@ func LoginRequest(r *http.Request, state *State) response {
 	query.Set("redirect_uri", redirectURI)
 	spotify_url.RawQuery = query.Encode()
 
-	headers := make(map[string]string)
-	headers["Location"] = spotify_url.String()
-
-	return response{status: http.StatusSeeOther, headers: headers}
+	return Redirect(http.StatusSeeOther, spotify_url.String())
 }
 
 func SpotifyCallback(r *http.Request, state *State) response {
@@ -137,7 +138,7 @@ func SpotifyCallback(r *http.Request, state *State) response {
 	state.RefreshToken = data.RefreshToken
 	state.Expires = time.Now().Add(time.Duration(data.ExpiresIn) * time.Second)
 
-	return response{status: 200}
+	return Redirect(http.StatusSeeOther, "/me")
 }
 
 func Me(r *http.Request, state *State) response {
@@ -149,8 +150,8 @@ func Me(r *http.Request, state *State) response {
 		}
 	}
 
-	requestData := spotify.MeRequest{AccessToken: accessToken}
-	resp, err := requestData.Send()
+	// Get Me
+	resp, err := spotify.Send(spotify.MeRequest{}, accessToken)
 	if err != nil {
 		return response{
 			status: http.StatusInternalServerError,
@@ -173,15 +174,70 @@ func Me(r *http.Request, state *State) response {
 		}
 	}
 
-	data := spotify.MeResponse{}
-	if err := data.UnmarshalJSON(b); err != nil {
+	me := spotify.MeResponse{}
+	if err := me.UnmarshalJSON(b); err != nil {
 		return response{
 			status: http.StatusInternalServerError,
 			err:    err,
 		}
 	}
 
-	fmt.Println(data)
+	if me.IsError() {
+		return response{
+			status: me.Status,
+			err:    me.Error,
+		}
+	}
 
-	return response{status: 200}
+	log.Println(me.PrivateUser)
+
+	// Get my playlists
+	resp, err = spotify.Send(spotify.GetPlaylistsRequest{}, accessToken)
+	if err != nil {
+		return response{
+			status: http.StatusInternalServerError,
+			err:    err,
+		}
+	}
+
+	b, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return response{
+			status: http.StatusInternalServerError,
+			err:    err,
+		}
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return response{
+			status: http.StatusBadRequest,
+			err:    errors.New(string(b)),
+		}
+	}
+
+	playlists := spotify.GetPlaylistsResponse{}
+	if err := playlists.UnmarshalJSON(b); err != nil {
+		return response{
+			status: http.StatusInternalServerError,
+			err:    err,
+		}
+	}
+
+	plr := exchanges.PlaylistResponse{
+		ID:        me.ID,
+		Playlists: make([]exchanges.Playlist, 0, len(playlists.Items)),
+	}
+
+	for _, playlist := range playlists.Items {
+		plr.Playlists = append(plr.Playlists, exchanges.Playlist{
+			ID:     playlist.ID,
+			Name:   playlist.Name,
+			Images: playlist.Images,
+		})
+	}
+
+	return response{
+		status: 200,
+		value:  &plr,
+	}
 }
