@@ -1,5 +1,7 @@
-github.com/conradludgate/playlist v0.0.0-20190810125514-198027d9e65a h1:2NRj8HAYsEz9JguwWLFa7q2BYc2+q33ZgnIUtEdEUew=
-github.com/conradludgate/playlist v0.0.0-20190810125514-198027d9e65a/go.mod h1:y4T76HWkz5kWEfAX9ygNr8ciTE+kszS8MpacPVKOna4=
+github.com/conradludgate/playlist/server/exchanges v0.0.0-20190810141941-fe1da90656c9 h1:9GSvzsgnf3R8N4YdNfwaZyQohXsXVwR0mc/rNLu/dSQ=
+github.com/conradludgate/playlist/server/exchanges v0.0.0-20190810141941-fe1da90656c9/go.mod h1:aqhoP9sfWgftcccbC93ZTVwfUVp3XTa3vDfg4WsZ01w=
+github.com/conradludgate/playlist/server/exchanges/spotify v0.0.0-20190810141941-fe1da90656c9 h1:wYxUvhOx3eTjKw6FOPhotiribg+ocwvxS0Cy5DZchYg=
+github.com/conradludgate/playlist/server/exchanges/spotify v0.0.0-20190810141941-fe1da90656c9/go.mod h1:+nR+4Tt9/dzydla656H/tErQrTe/ZP6euxfjVl3CHbU=
 github.com/gorilla/mux v1.7.3 h1:gnP5JzjVOuiZD07fKKToCAOjS0yOpj/qPETTXCCS6hw=
 github.com/gorilla/mux v1.7.3/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=

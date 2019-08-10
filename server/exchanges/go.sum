@@ -1,3 +1,5 @@
 github.com/conradludgate/playlist v0.0.0-20190810125514-198027d9e65a h1:2NRj8HAYsEz9JguwWLFa7q2BYc2+q33ZgnIUtEdEUew=
+github.com/conradludgate/playlist/server/exchanges/spotify v0.0.0-20190810141941-fe1da90656c9 h1:wYxUvhOx3eTjKw6FOPhotiribg+ocwvxS0Cy5DZchYg=
+github.com/conradludgate/playlist/server/exchanges/spotify v0.0.0-20190810141941-fe1da90656c9/go.mod h1:+nR+4Tt9/dzydla656H/tErQrTe/ZP6euxfjVl3CHbU=
 github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 h1:gGBSHPOU7g8YjTbhwn+lvFm2VDEhhA+PwDIlstkgSxE=
 github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7/go.mod h1:YARuvh7BUWHNhzDq2OM5tzR2RiCcN2D7sapiKyCel/M=
